@@ -23,9 +23,10 @@ func NewServer(crudInstance *crud.CRUD) *Server {
 
 	// Define routes
 	s.Mux.HandleFunc("/", s.HomeHandler)
-	s.Mux.HandleFunc("/user", s.CreateUserHandler) 
+	s.Mux.HandleFunc("/user", s.CreateUserHandler)
 	s.Mux.HandleFunc("/user/", s.GetUserByIdHandler)
-	s.Mux.HandleFunc("/users", s.GetUsersHandler)
+	s.Mux.HandleFunc("/users", s.GetAllUsersHandler)
+	s.Mux.HandleFunc("/search", s.SearchInUsersHandler)
 	return s
 }
 
@@ -73,8 +74,8 @@ func (s *Server) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
-	} 
-	
+	}
+
 	// Create a user
 	err = s.CRUD.CreateUser(user)
 	if err != nil {
@@ -99,15 +100,35 @@ func (s *Server) GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-
-func (s *Server) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	users, err := s.CRUD.GetUsers()
+	users, err := s.CRUD.GetAllUsers()
 	if err != nil {
 		http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+		return
+	}
+
+	// Write response
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}
+
+func (s *Server) SearchInUsersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	// values := r.URL.Query()
+	// for k, v := range values {
+	// 	fmt.Println(k, " => ", v[0])
+	// }
+	queries := r.URL.Query()
+	users, err := s.CRUD.SearchInUsers(queries["q"][0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

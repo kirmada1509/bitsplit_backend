@@ -39,7 +39,7 @@ func (crud CRUD) DeleteUser(userID int) error {
     return err
 }
 
-func (crud CRUD) GetUsers() ([]models.User, error) {
+func (crud CRUD) GetAllUsers() ([]models.User, error) {
     query := `SELECT id, name, email, uid FROM users`
     rows, err := crud.DB.Query(query)
     if err != nil {
@@ -58,4 +58,24 @@ func (crud CRUD) GetUsers() ([]models.User, error) {
     }
 
     return users, nil
+}
+
+func (crud CRUD) SearchInUsers(search_query string) ([]models.User, error) {
+	query := `SELECT id, name, email, uid FROM users WHERE name LIKE ?`
+	searchTerm := "%" + search_query + "%"
+	rows, err := crud.DB.Query(query, searchTerm)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+    var users []models.User
+	for rows.Next(){
+		var user models.User
+		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.UID); err != nil {
+            return nil, err
+        }
+        users = append(users, user)	
+	}
+	return users, nil
 }
