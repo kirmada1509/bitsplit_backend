@@ -2,21 +2,13 @@ package crud
 
 import (
 	"bitsplit_backend/models"
-	"database/sql"
 )
 
-type CRUD struct {
-	DB *sql.DB
-}
-
-func NewCRUD(db *sql.DB) CRUD {
-	return CRUD{DB: db}
-}
 
 // createUser creates a new user in the database
 func (crud CRUD) CreateUser(user models.User) error {
 	query := `INSERT INTO users (name, email, uid) VALUES (?, ?, ?)`
-	_, err := crud.DB.Exec(query, user.Name, user.Email, user.UID)
+    _, err := crud.DB.Exec(query, user.Name, user.Email, user.UID)
 	return err
 }
 
