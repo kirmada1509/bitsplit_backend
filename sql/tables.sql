@@ -15,11 +15,11 @@ CREATE TABLE groups(
 );
 
 
-CREATE TABLE user_groups (
+CREATE TABLE group_users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     group_id INTEGER NOT NULL,
-    status TEXT CHECK(status IN ('pending', 'active', 'left')) NOT NULL DEFAULT 'pending',
+    status TEXT,
     is_owner BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,

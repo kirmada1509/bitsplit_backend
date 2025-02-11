@@ -32,6 +32,9 @@ func NewServer(crudInstance *crud.CRUD) *Server {
 	s.Mux.HandleFunc("/all_groups", s.GetAllGroupsHandler)         
 	s.Mux.HandleFunc("/search_in_groups", s.SearchInGroupsHandler) 
 
+
+	// Define routes for group-user-related operations
+	s.Mux.HandleFunc("/add_user_to_group", s.AddUserToGroup)
 	return s
 }
 
