@@ -4,10 +4,10 @@ import (
 	"bitsplit_backend/models"
 	"encoding/json"
 	"io"
-	"net/http"	
+	"net/http"
 )
 
-func (s *Server) AddUserToGroup(w http.ResponseWriter, r *http.Request){
+func (s *Server) AddUserToGroup(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		return
@@ -32,24 +32,47 @@ func (s *Server) AddUserToGroup(w http.ResponseWriter, r *http.Request){
 		}
 	}()
 	if err != nil {
+		print(err.Error())
 		http.Error(w, "Failed to read request body", http.StatusBadRequest)
 		return
 	}
 	defer r.Body.Close()
 
+	// Parse JSON into Group struct
+	var groupUser models.GroupUser
+	err = json.Unmarshal(body, &groupUser)
+	if err != nil {
+		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
+		return
+	}
 
-		// Parse JSON into Group struct
-		var groupUser models.GroupUser
-		err = json.Unmarshal(body, &groupUser)
-		if err != nil {
-			http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-			return
-		}
-	
-		// Create a group
-		err = s.CRUD.AddUserToGroup(groupUser)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
+	// Create a group
+	err = s.CRUD.AddUserToGroup(groupUser)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+}
+
+func (s *Server) GetGroupUsersHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	groupID := r.URL.Query().Get("group_id")
+	print("data sent for ", groupID, "\n")
+	if groupID == "" {
+		http.Error(w, "Missing group_id parameter", http.StatusBadRequest)
+		return
+	}
+
+	users, err := s.CRUD.GetUsersInGroup(groupID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"users": users})
 }

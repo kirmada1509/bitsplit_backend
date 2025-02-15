@@ -1,6 +1,6 @@
 package server
 
-import(
+import (
 	"bitsplit_backend/models"
 	"encoding/json"
 	"io"
@@ -43,6 +43,7 @@ func (s *Server) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
+
 
 	// Create a group
 	err = s.CRUD.CreateGroup(group)
@@ -154,7 +155,7 @@ func (s *Server) GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with the list of groups as JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(groups)
+	json.NewEncoder(w).Encode(map[string]interface{}{"groups": groups})
 }
 
 
@@ -180,5 +181,31 @@ func (s *Server) SearchInGroupsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Respond with the search results as JSON
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(groups)
+	json.NewEncoder(w).Encode(map[string]interface{}{"groups": groups})
+}
+
+
+func (s *Server) GetGroupsByOwnerIDHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get owner_id from URL parameters
+	ownerID := r.URL.Query().Get("owner_id")
+	if ownerID == "" {
+		http.Error(w, "Owner ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve groups by owner_id
+	groups, err := s.CRUD.GetGroupsByOwnerID(ownerID)
+	if err != nil {
+		http.Error(w, "Error fetching groups", http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with the list of groups as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"groups": groups})
 }

@@ -2,8 +2,8 @@ package crud
 
 import (
 	"bitsplit_backend/models"
+    // "fmt"
 )
-
 
 // createGroup creates a new Group in the database
 func (crud CRUD) CreateGroup(Group models.Group) error {
@@ -56,6 +56,25 @@ func (crud CRUD) SearchInGroups(search_query string) ([]models.Group, error) {
 	query := `SELECT id, name, gid, owner_id FROM groups WHERE name LIKE ?`
 	searchTerm := "%" + search_query + "%"
 	rows, err := crud.DB.Query(query, searchTerm)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+    var Groups []models.Group
+	for rows.Next(){
+		var Group models.Group
+        if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
+            return nil, err
+        }
+        Groups = append(Groups, Group)	
+	}
+	return Groups, nil
+}
+
+func (crud CRUD) GetGroupsByOwnerID(owner_id string) ([]models.Group, error) {
+	query := `SELECT id, name, gid, owner_id FROM groups WHERE owner_id = ?`
+	rows, err := crud.DB.Query(query, owner_id)
 	if err != nil {
 		return nil, err
 	}

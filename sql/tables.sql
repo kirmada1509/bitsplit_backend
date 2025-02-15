@@ -17,11 +17,11 @@ CREATE TABLE groups(
 
 CREATE TABLE group_users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL,
-    group_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
+    user_name TEXT NOT NULL,
+    group_id TEXT NOT NULL,
     status TEXT,
     is_owner BOOLEAN NOT NULL DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
-    UNIQUE(user_id, group_id)
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
