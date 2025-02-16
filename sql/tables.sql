@@ -14,6 +14,15 @@ CREATE TABLE groups(
     FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE auth(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    owner_id TEXT NOT NULL,
+    password TEXT NOT NULL,
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 
 CREATE TABLE group_users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

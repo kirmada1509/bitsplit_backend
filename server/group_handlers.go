@@ -209,3 +209,28 @@ func (s *Server) GetGroupsByOwnerIDHandler(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{"groups": groups})
 }
+
+func (s *Server) GetGroupsUserIsInHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get owner_id from URL parameters
+	ownerID := r.URL.Query().Get("user_id")
+	if ownerID == "" {
+		http.Error(w, "Owner ID is required", http.StatusBadRequest)
+		return
+	}
+
+	// Retrieve groups by owner_id
+	groups, err := s.CRUD.GetGroupsUserIsIn(ownerID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Respond with the list of groups as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{"groups": groups})
+}

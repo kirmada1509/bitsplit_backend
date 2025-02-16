@@ -2,7 +2,7 @@ package crud
 
 import (
 	"bitsplit_backend/models"
-    // "fmt"
+	// "fmt"
 )
 
 // createGroup creates a new Group in the database
@@ -20,36 +20,36 @@ func (crud CRUD) GetGroupByID(GroupID string) (models.Group, error) {
 }
 
 func (crud CRUD) UpdateGroup(Group models.Group) error {
-    query := `UPDATE groups SET name = ?, gid = ?, owner_id = ? WHERE gid = ?`
-    _, err := crud.DB.Exec(query, Group.Name, Group.GID, Group.OWNER_ID, Group.GID)
-    return err
+	query := `UPDATE groups SET name = ?, gid = ?, owner_id = ? WHERE gid = ?`
+	_, err := crud.DB.Exec(query, Group.Name, Group.GID, Group.OWNER_ID, Group.GID)
+	return err
 }
 
 func (crud CRUD) DeleteGroup(GroupID string) error {
-    query := `DELETE FROM groups WHERE gid = ?`
-    _, err := crud.DB.Exec(query, GroupID)
-    return err
+	query := `DELETE FROM groups WHERE gid = ?`
+	_, err := crud.DB.Exec(query, GroupID)
+	return err
 }
 
 func (crud CRUD) GetAllGroups() ([]models.Group, error) {
-    query := `SELECT id, name, gid, owner_id FROM groups`
-    rows, err := crud.DB.Query(query)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	query := `SELECT id, name, gid, owner_id FROM groups`
+	rows, err := crud.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    var Groups []models.Group
+	var Groups []models.Group
 
-    for rows.Next() {
-        var Group models.Group
-        if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
-            return nil, err
-        }
-        Groups = append(Groups, Group)
-    }
+	for rows.Next() {
+		var Group models.Group
+		if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
+			return nil, err
+		}
+		Groups = append(Groups, Group)
+	}
 
-    return Groups, nil
+	return Groups, nil
 }
 
 func (crud CRUD) SearchInGroups(search_query string) ([]models.Group, error) {
@@ -61,13 +61,13 @@ func (crud CRUD) SearchInGroups(search_query string) ([]models.Group, error) {
 	}
 	defer rows.Close()
 
-    var Groups []models.Group
-	for rows.Next(){
+	var Groups []models.Group
+	for rows.Next() {
 		var Group models.Group
-        if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
-            return nil, err
-        }
-        Groups = append(Groups, Group)	
+		if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
+			return nil, err
+		}
+		Groups = append(Groups, Group)
 	}
 	return Groups, nil
 }
@@ -80,13 +80,13 @@ func (crud CRUD) GetGroupsByOwnerID(owner_id string) ([]models.Group, error) {
 	}
 	defer rows.Close()
 
-    var Groups []models.Group
-	for rows.Next(){
+	var Groups []models.Group
+	for rows.Next() {
 		var Group models.Group
-        if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
-            return nil, err
-        }
-        Groups = append(Groups, Group)	
+		if err := rows.Scan(&Group.ID, &Group.Name, &Group.GID, &Group.OWNER_ID); err != nil {
+			return nil, err
+		}
+		Groups = append(Groups, Group)
 	}
 	return Groups, nil
 }

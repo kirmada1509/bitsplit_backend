@@ -31,11 +31,13 @@ func NewServer(crudInstance *crud.CRUD) *Server {
 	s.Mux.HandleFunc("/delete_group", s.DeleteGroupHandler)
 	s.Mux.HandleFunc("/all_groups", s.GetAllGroupsHandler)
 	s.Mux.HandleFunc("/search_in_groups", s.SearchInGroupsHandler)
-	s.Mux.HandleFunc("/get_groups_by_owner_id", s.GetGroupsByOwnerIDHandler)
+	s.Mux.HandleFunc("/get_groups", s.GetGroupsByOwnerIDHandler)
+	s.Mux.HandleFunc("/get_groups_user_is_in", s.GetGroupsUserIsInHandler)
 
 	// Define routes for group-user-related operations
 	s.Mux.HandleFunc("/add_user_to_group", s.AddUserToGroup)
 	s.Mux.HandleFunc("/get_group_users", s.GetGroupUsersHandler)
+	s.Mux.HandleFunc("/get_all_group_users", s.GetAllGroupUsersHandler)
 	return s
 }
 
