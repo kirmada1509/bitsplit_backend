@@ -2,12 +2,8 @@ package server
 
 import (
 	"bitsplit_backend/crud"
-	"bitsplit_backend/models"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"strconv"
 )
 
 type Server struct {
@@ -21,11 +17,27 @@ func NewServer(crudInstance *crud.CRUD) *Server {
 		CRUD: crudInstance,
 	}
 
-	// Define routes
+	// Define routes for user-related operations
 	s.Mux.HandleFunc("/", s.HomeHandler)
-	s.Mux.HandleFunc("/user", s.CreateUserHandler) 
+	s.Mux.HandleFunc("/create_user", s.CreateUserHandler)
 	s.Mux.HandleFunc("/user/", s.GetUserByIdHandler)
-	s.Mux.HandleFunc("/users", s.GetUsersHandler)
+	s.Mux.HandleFunc("/all_users", s.GetAllUsersHandler)
+	s.Mux.HandleFunc("/search_in_users", s.SearchInUsersHandler)
+
+	// Define routes for group-related operations
+	s.Mux.HandleFunc("/create_group", s.CreateGroupHandler)
+	s.Mux.HandleFunc("/group/", s.GetGroupByIDHandler)
+	s.Mux.HandleFunc("/update_group", s.UpdateGroupHandler)
+	s.Mux.HandleFunc("/delete_group", s.DeleteGroupHandler)
+	s.Mux.HandleFunc("/all_groups", s.GetAllGroupsHandler)
+	s.Mux.HandleFunc("/search_in_groups", s.SearchInGroupsHandler)
+	s.Mux.HandleFunc("/get_groups", s.GetGroupsByOwnerIDHandler)
+	s.Mux.HandleFunc("/get_groups_user_is_in", s.GetGroupsUserIsInHandler)
+
+	// Define routes for group-user-related operations
+	s.Mux.HandleFunc("/add_user_to_group", s.AddUserToGroup)
+	s.Mux.HandleFunc("/get_group_users", s.GetGroupUsersHandler)
+	s.Mux.HandleFunc("/get_all_group_users", s.GetAllGroupUsersHandler)
 	return s
 }
 
@@ -36,82 +48,4 @@ func (s *Server) Start(port string) {
 
 func (s *Server) HomeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, world!"))
-}
-
-func (s *Server) CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	// Read request body
-	body, err := func() ([]byte, error) {
-		var r io.Reader = r.Body
-		b := make([]byte, 0, 512)
-		for {
-			n, err := r.Read(b[len(b):cap(b)])
-			b = b[:len(b)+n]
-			if err != nil {
-				if err == io.EOF {
-					err = nil
-				}
-				return b, err
-			}
-			if len(b) == cap(b) {
-				b = append(b, 0)[:len(b)]
-			}
-		}
-	}()
-	if err != nil {
-		http.Error(w, "Failed to read request body", http.StatusBadRequest)
-		return
-	}
-	defer r.Body.Close()
-
-	// Parse JSON into user struct
-	var user models.User
-	err = json.Unmarshal(body, &user)
-	if err != nil {
-		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
-		return
-	} 
-	
-	// Create a user
-	err = s.CRUD.CreateUser(user)
-	if err != nil {
-		http.Error(w, "Failed to create user", http.StatusInternalServerError)
-		return
-	}
-}
-
-func (s *Server) GetUserByIdHandler(w http.ResponseWriter, r *http.Request) {
-	id := r.URL.Path[len("/user/"):] // Extract ID from path
-	userID, err := strconv.Atoi(id)
-	if err != nil {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-		return
-	}
-	user, err := s.CRUD.GetUserByID(userID)
-	if err != nil {
-		http.Error(w, "User not found", http.StatusNotFound)
-		return
-	}
-	json.NewEncoder(w).Encode(user)
-
-}
-
-
-func (s *Server) GetUsersHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
-		return
-	}
-	users, err := s.CRUD.GetUsers()
-	if err != nil {
-		http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
-		return
-	}
-
-	// Write response
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(users)
 }
