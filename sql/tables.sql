@@ -1,8 +1,7 @@
 CREATE TABLE users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    uid TEXT UNIQUE NOT NULL
+    uid TEXT UNIQUE NOT NULL,
 );
 
 
@@ -34,3 +33,10 @@ CREATE TABLE group_users (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE
 );
+
+
+Table USERS
+User id
+User name
+email
+Firebase uid
