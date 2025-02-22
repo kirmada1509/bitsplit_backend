@@ -12,7 +12,7 @@ import (
 
 func main() {
     // Connect to SQLite database
-    db, err := sql.Open("sqlite3", "./mydatabase.db")
+    db, err := sql.Open("sqlite3", "./bitsplit.db")
     if err != nil {
         log.Fatal(err)
     }

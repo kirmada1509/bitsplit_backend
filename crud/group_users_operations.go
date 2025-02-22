@@ -2,87 +2,109 @@ package crud
 
 import (
 	"bitsplit_backend/models"
-	"fmt"
 )
 
-//add user to group
-
 func (crud CRUD) AddUserToGroup(groupUser models.GroupUser) error {
-	query := `INSERT INTO group_users (user_id, user_name, group_id, status, is_owner) VALUES (?, ?, ?, ?, ?)`
-	_, err := crud.DB.Exec(query, groupUser.UID, groupUser.USER_NAME, groupUser.GID, groupUser.STATUS, groupUser.IS_OWNER)
+	query := `INSERT INTO GROUP_USERS (UserID, user_name, GroupID, group_name, role, payment_status, bill_amount) 
+			  VALUES (?, ?, ?, ?, ?, ?, ?)`
+
+	_, err := crud.DB.Exec(query,
+		groupUser.UserID, groupUser.UserName, groupUser.GroupID, groupUser.GroupName,
+		groupUser.Role, groupUser.PaymentStatus, groupUser.BillAmount)
 
 	return err
 }
 
+func (crud CRUD) GetAllGroupUsers() ([]models.GroupUser, error) {
+	query := `SELECT UserID, user_name, GroupID, group_name, role, payment_status, bill_amount FROM GROUP_USERS`
 
-func (crud CRUD) GetAllGroupUsers() ([]models.GroupUser, error){
-	query := `SELECT * FROM group_users`
 	rows, err := crud.DB.Query(query)
-    if err != nil {
-        print(err.Error())
-        return nil, err
-    }
-    defer rows.Close()
-
-    var users []models.GroupUser
-
-    for rows.Next() {
-        var user models.GroupUser
-        if err := rows.Scan(&user.ID, &user.UID, &user.USER_NAME, &user.GID, &user.STATUS, &user.IS_OWNER); err != nil {
-            return nil, err
-        }
-        users = append(users, user)
-    }
-
-    return users, nil
-}
-
-func (crud CRUD) GetUsersInGroup(groupId string) ([]models.GroupUser, error){
-	query := `SELECT * FROM group_users WHERE group_id = ?`
-	rows, err := crud.DB.Query(query, groupId)
-    if err != nil {
-        print(err.Error())
-        return nil, err
-    }
-    defer rows.Close()
-
-    var users []models.GroupUser
-
-    for rows.Next() {
-        var user models.GroupUser
-        if err := rows.Scan(&user.ID, &user.UID, &user.USER_NAME, &user.GID, &user.STATUS, &user.IS_OWNER); err != nil {
-            return nil, err
-        }
-        users = append(users, user)
-    }
-
-    return users, nil
-}
-
-func (crud CRUD) GetGroupsUserIsIn(userID string) ([]models.Group, error) {
-    ///TODO: checking for name, change it to based on id
-	query := `
-		SELECT g.id, g.name, g.GID, g.owner_id 
-		FROM groups g
-		JOIN group_users gu ON g.GID = gu.group_id
-		WHERE gu.user_name = ?;
-	`
-
-	rows, err := crud.DB.Query(query, userID)
 	if err != nil {
-		fmt.Println(err.Error())
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupUsers []models.GroupUser
+	for rows.Next() {
+		var groupUser models.GroupUser
+		err := rows.Scan(
+			&groupUser.UserID, &groupUser.UserName, &groupUser.GroupID,
+			&groupUser.GroupName, &groupUser.Role, &groupUser.PaymentStatus,
+			&groupUser.BillAmount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		groupUsers = append(groupUsers, groupUser)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupUsers, nil
+}
+
+func (crud CRUD) GetUsersInGroup(GroupID string) ([]models.GroupUser, error) {
+	query := `SELECT UserID, user_name, GroupID, group_name, role, payment_status, bill_amount 
+	          FROM GROUP_USERS WHERE GroupID = ?`
+
+	rows, err := crud.DB.Query(query, GroupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var groupUsers []models.GroupUser
+	for rows.Next() {
+		var groupUser models.GroupUser
+		err := rows.Scan(
+			&groupUser.UserID, &groupUser.UserName, &groupUser.GroupID,
+			&groupUser.GroupName, &groupUser.Role, &groupUser.PaymentStatus,
+			&groupUser.BillAmount,
+		)
+		if err != nil {
+			return nil, err
+		}
+		groupUsers = append(groupUsers, groupUser)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return groupUsers, nil
+}
+
+func (crud CRUD) GetGroupsUserIsIn(UserID string) ([]models.Group, error) {
+	query := `SELECT g.GroupID, g.group_name, g.owner_id, g.owner_name, g.bill_amount, 
+	                 g.members_count, g.unpaid_count, g.currency, g.description, g.created_at
+	          FROM GROUPS g
+	          INNER JOIN GROUP_USERS gu ON g.GroupID = gu.GroupID
+	          WHERE gu.UserID = ?`
+
+	rows, err := crud.DB.Query(query, UserID)
+	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	var groups []models.Group
-
 	for rows.Next() {
 		var group models.Group
-		if err := rows.Scan(&group.ID, &group.Name, &group.GID, &group.OWNER_ID); err != nil {
+		err := rows.Scan(
+			&group.GroupID, &group.GroupName, &group.OwnerID, &group.OwnerName,
+			&group.BillAmount, &group.MembersCount, &group.UnpaidCount,
+			&group.Currency, &group.Description, &group.CreatedAt,
+		)
+		if err != nil {
 			return nil, err
 		}
 		groups = append(groups, group)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return groups, nil

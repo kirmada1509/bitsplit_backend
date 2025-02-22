@@ -47,7 +47,7 @@ CREATE TABLE GROUPS (
     group_name TEXT NOT NULL,
     owner_id TEXT NOT NULL,
     owner_name TEXT NOT NULL,
-    bill REAL DEFAULT 0,
+    bill_amount REAL DEFAULT 0,
     members_count INTEGER DEFAULT 0,
     unpaid_count INTEGER DEFAULT 0,
     currency TEXT DEFAULT 'INR',
@@ -63,7 +63,7 @@ CREATE TABLE GROUP_USERS (
     group_name TEXT NOT NULL,
     role TEXT CHECK(role IN ('owner', 'member')) DEFAULT 'member',
     payment_status TEXT CHECK(payment_status IN ('paid', 'unpaid')) DEFAULT 'unpaid',
-    bill REAL DEFAULT 0,
+    bill_amount REAL DEFAULT 0,
     PRIMARY KEY (user_id, group_id),
     FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE,
     FOREIGN KEY (group_id) REFERENCES GROUPS(group_id) ON DELETE CASCADE

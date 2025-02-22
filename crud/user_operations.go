@@ -4,70 +4,54 @@ import (
 	"bitsplit_backend/models"
 )
 
-
-// createUser creates a new user in the database
 func (crud CRUD) CreateUser(user models.User) error {
-	query := `INSERT INTO users (name, email, uid) VALUES (?, ?, ?)`
-    _, err := crud.DB.Exec(query, user.Name, user.Email, user.UID)
+	query := `INSERT INTO USERS (user_id, user_name, email, firebase_uid) VALUES (?, ?, ?, ?)`
+	_, err := crud.DB.Exec(query, user.UserID, user.UserName, user.Email, user.FirebaseUID)
 	return err
 }
 
-func (crud CRUD) GetUserByID(userID int) (models.User, error) {
+func (crud CRUD) GetUserByID(userID string) (models.User, error) {
 	var user models.User
-	query := `SELECT id, name, email, uid FROM users WHERE id = ?`
-	err := crud.DB.QueryRow(query, userID).Scan(&user.ID, &user.Name, &user.Email, &user.UID)
+	query := `SELECT user_id, user_name, email, firebase_uid FROM USERS WHERE user_id = ?`
+	err := crud.DB.QueryRow(query, userID).Scan(&user.UserID, &user.UserName, &user.Email, &user.FirebaseUID)
 	return user, err
 }
 
-func (crud CRUD) UpdateUser(user models.User) error {
-    query := `UPDATE users SET name = ?, email = ?, uid = ? WHERE id = ?`
-    _, err := crud.DB.Exec(query, user.Name, user.Email, user.UID, user.ID)
-    return err
-}
-
-func (crud CRUD) DeleteUser(userID int) error {
-    query := `DELETE FROM users WHERE id = ?`
-    _, err := crud.DB.Exec(query, userID)
-    return err
-}
-
 func (crud CRUD) GetAllUsers() ([]models.User, error) {
-    query := `SELECT id, name, email, uid FROM users`
-    rows, err := crud.DB.Query(query)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	query := `SELECT user_id, user_name, email, firebase_uid FROM USERS`
+	rows, err := crud.DB.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    var users []models.User
-
-    for rows.Next() {
-        var user models.User
-        if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.UID); err != nil {
-            return nil, err
-        }
-        users = append(users, user)
-    }
-
-    return users, nil
+	var users []models.User
+	for rows.Next() {
+		var user models.User
+		if err := rows.Scan(&user.UserID, &user.UserName, &user.Email, &user.FirebaseUID); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
 
-func (crud CRUD) SearchInUsers(search_query string) ([]models.User, error) {
-	query := `SELECT id, name, email, uid FROM users WHERE name LIKE ?`
-	searchTerm := "%" + search_query + "%"
+func (crud CRUD) SearchInUsers(searchQuery string) ([]models.User, error) {
+	query := `SELECT user_id, user_name, email, firebase_uid FROM USERS WHERE user_name LIKE ?`
+	searchTerm := "%" + searchQuery + "%"
 	rows, err := crud.DB.Query(query, searchTerm)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-    var users []models.User
-	for rows.Next(){
+	var users []models.User
+	for rows.Next() {
 		var user models.User
-		if err := rows.Scan(&user.ID, &user.Name, &user.Email, &user.UID); err != nil {
-            return nil, err
-        }
-        users = append(users, user)	
+		if err := rows.Scan(&user.UserID, &user.UserName, &user.Email, &user.FirebaseUID); err != nil {
+			return nil, err
+		}
+		users = append(users, user)
 	}
 	return users, nil
 }
